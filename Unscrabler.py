@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.io import wavfile as wav
 import random
+import matplotlib.pyplot as plt
 
 #############################################################################################################################################
 #sound loading:
@@ -9,7 +10,6 @@ sounds=2 #Number of sources
 
 sources=[] #Has the soundfiles
 sfreq=[] #Has the sample frequencies
-
 for c0 in range(0,sounds):
     tosend1 = wav.read(f"Sources\\Sound_{c0}.wav")[0]
     tosend2 = wav.read(f"Sources\\Sound_{c0}.wav")[1]
@@ -129,3 +129,40 @@ for i in range(sounds):
             best_corr = cross_corr[i, best_match_idx]
             print(f"Original Source {i} uniquely matches Estimated Source {best_match_idx} with a correlation of {best_corr:.3f}")
             break
+
+#############################################################################################################################################
+# Pipeline Visualization (Added cleanly without modifying your logic)
+
+fig, axes = plt.subplots(4, 1, figsize=(10, 9), sharex=True)
+fig.suptitle(
+    "Custom NumPy FastICA Pipeline Execution", fontsize=14, fontweight="bold"
+)
+
+pipeline_titles = [
+    "1. Original Source Signals (Ground Truth S)",
+    "2. Mixed Audio Signals (Observed Input samples)",
+    "3. PCA Whitened Signals (Unit Sphere upright_samps)",
+    "4. Recovered Independent Components (FastICA Output S_prob)",
+]
+
+pipeline_data = [S, samples, upright_samps, S_prob]
+colors = ["#1fb430", "#ff0e0e"]
+
+for idx, (ax, data, title) in enumerate(zip(axes, pipeline_data, pipeline_titles)):
+  for ch in range(data.shape[0]):
+    ax.plot(
+        data[ch, :],
+        label=f"Channel {ch+1}",
+        color=colors[ch % len(colors)],
+        alpha=0.85,
+        linewidth=1,
+    )
+  ax.set_title(title, fontsize=10, loc="left", fontweight="semibold")
+  ax.grid(True, linestyle="--", alpha=0.5)
+  ax.legend(loc="upper right", fontsize=8)
+
+axes[-1].set_xlabel("Time Samples", fontsize=10)
+plt.tight_layout()
+plt.savefig("ica_full_pipeline_plot.png", dpi=300, bbox_inches="tight")
+plt.show()
+print("Pipeline plot successfully generated and saved to ica_full_pipeline_plot.png")
